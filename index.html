@@ -55,98 +55,105 @@
     $('main').style.display='none';
     var myCodeMirror;
     remoteStorage.claimAccess({
-      www: 'rw'
+	www: 'rw'
     }).then(function () {
-      remoteStorage.displayWidget('remotestorage-connect');
-      remoteStorage.www.init();
+	remoteStorage.displayWidget('remotestorage-connect');
+	remoteStorage.www.init();
     });
 
     function exec() {
-      sockethub.connect($('shcreds').value).then(function() {
-        sockethub.do({
-          platform: 'shell',
-          verb: 'execute',
-          object: {
-            text: $('shcmd').value
-          }
-        }, function(txt) {
-          $('shlog').innerHTML = txt;
-        });
-      });
+	sockethub.connect($('shcreds').value).then(function() {
+            sockethub.do({
+		platform: 'shell',
+		verb: 'execute',
+		object: {
+		    text: $('shcmd').value
+		}
+            }, function(txt) {
+		$('shlog').innerHTML = txt;
+            });
+	});
     }
 
     remoteStorage.onWidget('ready', function() {
-      $('pleaseConnect').style.display='none';
-      $('main').style.display='block';
-      if(!myCodeMirror) {//protection in case this code is somehow called twice
-        console.log('displaying CodeMirror');
-        myCodeMirror = CodeMirror($('editor'), {
-          lineNumbers: true
-        });
-      } else {
-        console.log('Not displaying CodeMirror');
-      }
-      remoteStorage.www.onDir(function(obj) {
-        var str = '';
-        for(var i=0; i<obj.items.length; i++) {
-          if(obj.items[i].substr(-1)=='/') {
-            str += '<li onclick="remoteStorage.www.goToDir(\''+obj.dir.join('')+obj.items[i]+'\');">'+obj.items[i]+'</li>';
-          } else {
-            str += '<li onclick="remoteStorage.www.goToFile(\''+obj.dir.join('')+obj.items[i]+'\');">'+obj.items[i]+'</li>';
-          }
-        }
-        $('items').innerHTML = str;
-        str = '<li onclick="remoteStorage.www.goToDir(\'\');">(root)</li>';
-        var dirSoFar='';
-        for(var i=0; i<obj.dir.length; i++) {
-          dirSoFar += obj.dir[i];
-          str += '<li onclick="remoteStorage.www.goToDir(\''+dirSoFar+'\');">'+obj.dir[i]+'</li>';
-        }
-        $('cwd').innerHTML = str;
-      });
+	$('pleaseConnect').style.display='none';
+	$('main').style.display='block';
+	if(!myCodeMirror) {//protection in case this code is somehow called twice
+            console.log('displaying CodeMirror');
+            myCodeMirror = CodeMirror($('editor'), {
+		lineNumbers: true
+            });
+	} else {
+            console.log('Not displaying CodeMirror');
+	}
+	remoteStorage.www.onDir(function(obj) {
+            var str = '';
+            for(var i=0; i<obj.items.length; i++) {
+		if(obj.items[i].substr(-1)=='/') {
+		    str += '<li onclick="remoteStorage.www.goToDir(\''+obj.dir.join('')+obj.items[i]+'\');">'+obj.items[i]+'</li>';
+		} else {
+		    str += '<li onclick="remoteStorage.www.goToFile(\''+obj.dir.join('')+obj.items[i]+'\');">'+obj.items[i]+'</li>';
+		}
+            }
+            $('items').innerHTML = str;
+            str = '<li onclick="remoteStorage.www.goToDir(\'\');">(root)</li>';
+            var dirSoFar='';
+            for(var i=0; i<obj.dir.length; i++) {
+		dirSoFar += obj.dir[i];
+		str += '<li onclick="remoteStorage.www.goToDir(\''+dirSoFar+'\');">'+obj.dir[i]+'</li>';
+            }
+            $('cwd').innerHTML = str;
+	});
 
-      $('up').onclick = function() {
-        var mode = myCodeMirror.getOption('mode'), type;
-        if(mode=='javascript') {
-          type = 'application/javascript';
-        } else if(mode == 'htmlmixed') {
-          type = 'text/html';
-        } else if(mode == 'php') {
-          type = 'application/php';
-        } else {
-          type = 'text/markdown';
-        }
-        remoteStorage.www.up($('path').value, type, myCodeMirror.getValue());
-      }
-      $('down').onclick = function() {
-        remoteStorage.www.down($('path').value);
-      };
-      remoteStorage.www.onCurr(function(obj) {
-        console.log('onCurr', obj);
-        if(obj.mimeType=='application/javascript') {
-          myCodeMirror.setOption('mode', 'javascript');
-        } else if(obj.mimeType=='text/html') {
-          myCodeMirror.setOption('mode', 'htmlmixed');
-        } else if(obj.mimeType=='application/php') {
-          myCodeMirror.setOption('mode', 'php');
-        } else {
-          myCodeMirror.setOption('mode', 'markdown');
-        }
-        if(typeof(obj.data) != 'string') {
-          obj.data = '';
-        }
-        myCodeMirror.setValue(obj.data);
-        $('path').value = obj.path;
-      });
-      remoteStorage.www.goToDir(''); 
+	$('up').onclick = function() {
+            var mode = myCodeMirror.getOption('mode'), type;
+            if(mode=='javascript') {
+		type = 'application/javascript';
+            } else if(mode == 'htmlmixed') {
+		type = 'text/html';
+            } else if(mode == 'php') {
+		type = 'application/php';
+            } else {
+		type = 'text/markdown';
+            }
+            remoteStorage.www.up($('path').value, type, myCodeMirror.getValue());
+	}
+	$('down').onclick = function() {
+            remoteStorage.www.down($('path').value);
+	};
+	remoteStorage.www.onCurr(function(obj) {
+            console.log('onCurr', obj);
+            if(obj.mimeType=='application/javascript') {
+		myCodeMirror.setOption('mode', 'javascript');
+            } else if(obj.mimeType=='text/html') {
+		myCodeMirror.setOption('mode', 'htmlmixed');
+            } else if(obj.mimeType=='application/php') {
+		myCodeMirror.setOption('mode', 'php');
+            } else {
+		myCodeMirror.setOption('mode', 'markdown');
+            }
+            if(typeof(obj.data) != 'string') {
+		obj.data = '';
+            }
+            myCodeMirror.setValue(obj.data);
+            $('path').value = obj.path;
+	});
+	remoteStorage.www.goToDir(''); 
+	var onload_path = document.location.search.slice(1).split('&').reduce( function(m, el){ var set = el.split('='); m[decodeURIComponent(set[0])]=decodeURIComponent(set[1]); return m  }, {}).path;
+	console.log(onload_path);
+	if(onload_path){
+	    remoteStorage.www.down(onload_path);
+	};
     });
-
+			   
     remoteStorage.onWidget('disconnect', function() {
-      $('main').style.display='none';
-      $('pleaseConnect').style.display='block';
-      $('cwd').innerHTML='';
-      $('items').innerHTML='';
-      myCodeMirror.setValue('');
+	$('main').style.display='none';
+	$('pleaseConnect').style.display='block';
+	$('cwd').innerHTML='';
+	$('items').innerHTML='';
+	myCodeMirror.setValue('');
+
     });
+
   </script>
 </html>
